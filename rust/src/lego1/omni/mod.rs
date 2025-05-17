@@ -9,3 +9,4 @@ mod mxutilities;
 mod mxcollection;
 mod flic;
 mod mxbitmap;
+mod mxpalette;
