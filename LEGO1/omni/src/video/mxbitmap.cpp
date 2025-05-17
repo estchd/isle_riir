@@ -28,10 +28,10 @@ MxBitmap::MxBitmap()
 MxBitmap::~MxBitmap()
 {
 	if (m_info) {
-		delete m_info;
+		delete[] ((MxU8*) m_info);
 	}
 	if (m_data) {
-		delete m_data;
+		delete[] m_data;
 	}
 	if (m_palette) {
 		delete m_palette;
@@ -80,7 +80,7 @@ MxResult MxBitmap::SetSize(MxS32 p_width, MxS32 p_height, MxPalette* p_palette, 
 done:
 	if (ret) {
 		if (m_info) {
-			delete[] m_info;
+			delete[] ((MxU8*) m_info);
 			m_info = NULL;
 		}
 
@@ -118,7 +118,7 @@ MxResult MxBitmap::ImportBitmapInfo(MxBITMAPINFO* p_info)
 done:
 	if (result != SUCCESS) {
 		if (m_info) {
-			delete[] m_info;
+			delete[] ((MxU8*) m_info);
 			m_info = NULL;
 		}
 
@@ -157,7 +157,7 @@ MxResult MxBitmap::ImportBitmap(MxBitmap* p_bitmap)
 done:
 	if (result != SUCCESS) {
 		if (m_info) {
-			delete[] m_info;
+			delete[] ((MxU8*) m_info);
 			m_info = NULL;
 		}
 
@@ -177,7 +177,7 @@ MxLong MxBitmap::Read(const char* p_filename)
 	MxResult result = FAILURE;
 	HANDLE handle = 0;
 
-	handle = CreateFileA(p_filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	handle = CreateFile(p_filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	if (handle == INVALID_HANDLE_VALUE) {
 		goto done;
@@ -249,7 +249,7 @@ MxResult MxBitmap::LoadFile(HANDLE p_handle)
 done:
 	if (result != SUCCESS) {
 		if (m_info) {
-			delete[] m_info;
+			delete[] ((MxU8*) m_info);
 			m_info = NULL;
 		}
 
