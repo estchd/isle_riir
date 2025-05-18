@@ -12,6 +12,7 @@ pub trait MxCore {
 	fn get_id(&self) -> u32;
 }
 
+#[derive(Clone, Copy)]
 pub struct MxCoreStruct {
 	id: u32
 }
