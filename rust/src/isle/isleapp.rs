@@ -1,8 +1,9 @@
 use std::sync::atomic::{AtomicBool, AtomicU8};
-use windows::core::w;
+use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{HINSTANCE, HWND, RECT, WPARAM};
+use windows::Win32::Media::Audio::DirectSound::{DirectSoundCreate, IDirectSound};
 use windows::Win32::System::WindowsProgramming::GetProfileStringW;
-use windows::Win32::UI::WindowsAndMessaging::HCURSOR;
+use windows::Win32::UI::WindowsAndMessaging::{FindWindowW, SetForegroundWindow, ShowWindow, HCURSOR, SW_RESTORE};
 use crate::lego1::omni::mxgeometry::mxrect::MxRect32;
 use crate::lego1::omni::mxtypes::MxResult;
 use crate::lego1::omni::mxvideoparam::MxVideoParam;
@@ -31,8 +32,10 @@ const TARGET_DEPTH: i32 = 16;
 const REQ_ENABLE_RM_DEVICE: AtomicBool = AtomicBool::new(false);
 
 const WNDCLASS_NAME: &'static str = "Lego Island MainNoM App";
+const WNDCLASS_NAME_W: PCWSTR = w!("Lego Island MainNoM App");
 
 const WINDOW_TITLE: &'static str = "LEGO\u{AE}";
+const WINDOW_TITLE_W: PCWSTR = w!("LEGO\u{AE}");
 
 pub struct IsleApp {
 	hd_path: Option<String>,
@@ -178,15 +181,24 @@ impl IsleApp {
 	                         light_support: bool,
 	                         param_7: bool,
 	                         wide_view_angle: bool,
-	                         device_id: &str
-	) -> bool {
+	                         device_id: Option<&str>
+	) {
 		self.video_param.flags_mut().set_fullscreen(full_screen);
 		self.video_param.flags_mut().set_flip_surfaces(flip_surfaces);
 		self.video_param.flags_mut().set_back_buffers(!back_buffers);
-		self.video_param.flags_mut().set_lacks_light_support(!param_6);
+		self.video_param.flags_mut().set_lacks_light_support(!light_support);
 		self.video_param.flags_mut().set_f1_bit_7(param_7);
-		self.video_param.
-		todo!()
+		self.video_param.flags_mut().set_wide_view_angle(wide_view_angle);
+		self.video_param.flags_mut().set_f2_bit_1(true);
+
+		self.video_param.set_device_name(device_id);
+
+		if using_8_bit {
+			self.video_param.flags_mut().set_16_bit(false);
+		}
+		if using_16_bit {
+			self.video_param.flags_mut().set_16_bit(true);
+		}
 	}
 
 	pub fn setup_window(&mut self, instance: HINSTANCE, cmd_line: &str) -> MxResult {
@@ -259,10 +271,42 @@ impl Drop for IsleApp {
 	}
 }
 
-fn find_existing_instance() -> bool {
-	todo!()
+pub fn find_existing_instance() -> bool {
+	let h_wnd = unsafe {
+		FindWindowW(WNDCLASS_NAME_W, WINDOW_TITLE_W)
+	};
+
+	if !h_wnd.is_ok() {
+		return true;
+	}
+
+	let h_wnd = h_wnd.unwrap();
+
+	let res = unsafe {
+		SetForegroundWindow(h_wnd)
+	};
+
+	if res.as_bool() {
+		unsafe {
+			let _ = ShowWindow(h_wnd, SW_RESTORE);
+		}
+	}
+
+	false
 }
 
-fn start_direct_sound() -> bool {
+pub fn start_direct_sound() -> bool {
+	let mut ds: Option<IDirectSound> = None;
+	
+	let res = unsafe {
+		DirectSoundCreate(None, &mut ds, None)
+	};
+	
+	if res.is_err() || ds.is_none() {
+		return false;
+	}
+	
+	
+	
 	todo!()
 }

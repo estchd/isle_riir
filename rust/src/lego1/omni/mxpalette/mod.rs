@@ -1,9 +1,8 @@
 mod default_palette_entries;
 mod safer_hdc;
 
-use windows::Win32::Foundation::HWND;
 use windows::Win32::Graphics::DirectDraw::IDirectDrawPalette;
-use windows::Win32::Graphics::Gdi::{GetDC, GetDeviceCaps, GetSystemPaletteEntries, ReleaseDC, HDC, PALETTEENTRY, PC_NOCOLLAPSE, RASTERCAPS, RC_PALETTE, RGBQUAD, SIZEPALETTE};
+use windows::Win32::Graphics::Gdi::{GetDeviceCaps, GetSystemPaletteEntries, PALETTEENTRY, PC_NOCOLLAPSE, RASTERCAPS, RC_PALETTE, RGBQUAD, SIZEPALETTE};
 use crate::lego1::omni::mxcore::{MxCore, MxCoreStruct};
 use crate::lego1::omni::mxpalette::default_palette_entries::DEFAULT_PALETTE_ENTRIES;
 use crate::lego1::omni::mxpalette::safer_hdc::SafeHDC;
