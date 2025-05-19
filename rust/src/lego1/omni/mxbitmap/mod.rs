@@ -427,15 +427,11 @@ impl MxBitmap {
 		let mut entries: [PALETTEENTRY; 256] = [PALETTEENTRY::default(); 256];
 
 		if let Some(palette) = palette {
-			if palette.get_entries(&mut entries) != SUCCESS {
-				return FAILURE;
-			}
+			palette.get_entries(&mut entries);
 		}
 		else {
 			let palette = MxPalette::new();
-			if palette.get_entries(&mut entries) != SUCCESS {
-				return FAILURE;
-			}
+			palette.get_entries(&mut entries);
 		}
 
 		for i in 0..256 {
