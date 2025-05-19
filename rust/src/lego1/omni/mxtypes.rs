@@ -22,6 +22,7 @@ pub const FAILURE: MxResult = -1;
 pub type MxBool = bool;
 
 bitfield! {
+	#[derive(Copy, Clone)]
 	pub struct FlagBitfield(u8);
 	impl Debug;
 	impl BitAnd;

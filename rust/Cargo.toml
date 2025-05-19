@@ -17,5 +17,7 @@ features = ["alloc", "std", "derive", "simd"]
 version = "0.61.1"
 features = [
     "Win32_Graphics_Gdi",
-    "Win32_Graphics_DirectDraw"
+    "Win32_Graphics_DirectDraw",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_WindowsProgramming"
 ]

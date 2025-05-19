@@ -1,1 +1,1 @@
-mod omni;
+pub mod omni;

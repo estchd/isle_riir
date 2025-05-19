@@ -130,9 +130,22 @@ impl MxPalette {
 			return SUCCESS;
 		}
 
-		
+		self.entries[141].peRed = sky_color.peRed;
+		self.entries[141].peGreen = sky_color.peGreen;
+		self.entries[141].peBlue = sky_color.peBlue;
 
-		todo!()
+		self.sky_color = self.entries[141];
+
+		let result = unsafe {
+			self.palette.as_ref().unwrap().SetEntries(0, 141, 1, &mut self.sky_color as *mut PALETTEENTRY)
+		};
+
+		if result.is_ok() {
+			SUCCESS
+		}
+		else {
+			FAILURE
+		}
 	}
 
 	pub fn reset(&mut self, ignore_sky_color: bool) {
@@ -143,8 +156,8 @@ impl MxPalette {
 		todo!()
 	}
 
-	pub fn set_palette(&mut self, palette: &Box<IDirectDrawPalette>) {
-		todo!()
+	pub fn set_palette(&mut self, palette: Box<IDirectDrawPalette>) {
+		self.palette = Some(palette);
 	}
 
 	pub fn set_override_sky_color(&mut self, value: bool) {
@@ -154,7 +167,19 @@ impl MxPalette {
 
 impl PartialEq<Self> for MxPalette {
 	fn eq(&self, other: &Self) -> bool {
-		todo!()
+		for i in 0..256 {
+			if self.entries[i].peRed != other.entries[i].peRed {
+				return false;
+			}
+			if self.entries[i].peGreen != other.entries[i].peGreen {
+				return false;
+			}
+			if self.entries[i].peBlue != other.entries[i].peBlue {
+				return false;
+			}
+		}
+
+		true
 	}
 }
 

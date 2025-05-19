@@ -1,5 +1,6 @@
 use crate::lego1::omni::mxtypes::FlagBitfield;
 
+#[derive(Copy, Clone)]
 pub struct MxVideoParamFlags {
 	flags1: FlagBitfield,
 	flags2: FlagBitfield,
@@ -48,7 +49,7 @@ impl MxVideoParamFlags {
 		self.flags1.set_bit_7(value);
 	}
 
-	pub fn set_f2_bit_0(&mut self, value: bool) {
+	pub fn set_lacks_light_support(&mut self, value: bool) {
 		self.flags2.set_bit_0(value);
 	}
 
@@ -80,7 +81,7 @@ impl MxVideoParamFlags {
 		self.flags1.get_bit_6()
 	}
 
-	pub fn get_f2_bit_0(&self) -> bool {
+	pub fn get_lacks_light_support(&self) -> bool {
 		self.flags2.get_bit_0()
 	}
 
