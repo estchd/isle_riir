@@ -1,1 +1,10 @@
 pub mod omni;
+mod viewmanager;
+mod realtime;
+mod mxgeometry;
+mod lego;
+mod modeldb;
+mod mxdirectx;
+mod mxstl;
+mod res;
+mod tgl;
