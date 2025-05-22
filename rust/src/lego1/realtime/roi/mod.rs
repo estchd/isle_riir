@@ -1,5 +1,5 @@
 use std::collections::LinkedList;
-use crate::lego1::realtime::lodlist::LodListBase;
+use crate::lego1::realtime::lod_list::LodListBase;
 use crate::lego1::realtime::roi::bounding_box::BoundingBox;
 use crate::lego1::realtime::roi::bounding_sphere::BoundingSphere;
 use crate::lego1::realtime::roi::lod_object::LODObject;
@@ -43,9 +43,9 @@ pub trait ROI {
 }
 
 pub struct ROIStruct {
-	comp: (),
-	lods: (),
-	visible: bool,
+	pub comp: (),
+	pub lods: (),
+	pub visible: bool,
 }
 
 impl ROIStruct {
