@@ -6,59 +6,65 @@ use crate::lego1::realtime::roi::{CompoundObject, ROIStruct, ROI};
 use crate::lego1::realtime::roi::bounding_box::BoundingBox;
 use crate::lego1::realtime::roi::bounding_sphere::BoundingSphere;
 use crate::lego1::realtime::roi::lod_object::LODObject;
-use crate::lego1::realtime::vector::Vector3;
+use crate::lego1::realtime::vector::{Vector3, Vector4};
 
 pub trait OrientableRoi: ROI {
-	fn v_table_0x14(&mut self);
+	fn get_world_velocity(&self) -> &Vector3;
 
-	fn update_world_bounding_volumes(&mut self);
+	fn get_world_velocity_mut(&mut self) -> &mut Vector3;
 
-	fn v_table_0x1c(&mut self);
-
-	fn set_local_transform(&mut self, transform: &Matrix4);
-
-	fn v_table_0x24(&mut self, transform: &Matrix4);
-
-	fn update_world_data(&mut self, transform: &Matrix4);
+	fn set_world_velocity(&mut self, world_velocity: &Vector3);
 
 	fn update_world_velocity(&mut self);
 
-	fn wrapped_set_local_transform(&mut self, transform: &Matrix4);
+	fn get_world_bounding_box(&self) -> &BoundingBox;
+	fn get_world_bounding_box_mut(&mut self) -> &mut BoundingBox;
 
-	fn update_transformation_relative_to_parent(&mut self, transform: &Matrix4);
-
-	fn wrapped_v_table_0x24(&mut self, transform: &Matrix4);
-
-	fn get_local_transform(&self, out: &mut Matrix4);
-
-	fn fun_100a58f0(&mut self, transform: &Matrix4);
-
-	fn fun_100a5a30(&mut self, world_velocity: &Vector3);
+	fn get_world_bounding_sphere(&self) -> &BoundingSphere;
+	fn get_world_bounding_sphere_mut(&mut self) -> &mut BoundingSphere;
 
 	fn get_local_2_world(&self) -> &Matrix4;
 
-	fn get_world_position(&self) -> Vector3;
+	fn get_local_2_world_mut(&mut self) -> &mut Matrix4;
 
-	fn get_world_direction(&self) -> Vector3;
+	fn set_local_2_world(&mut self, local_2_world: &Matrix4, update_world_data: bool);
 
-	fn get_world_up(&self) -> Vector3;
+	fn get_world_position(&self) -> Matrix4Vec3Ref;
 
-	fn get_parent_roi(&self) -> &dyn OrientableRoi;
+	fn get_world_position_mut(&mut self) -> Matrix4Vec3RefMut;
 
-	fn set_parent_rio(&mut self, parent_roi: Option<Weak<dyn OrientableRoi>>);
+	fn get_world_direction(&self) -> Matrix4Vec3Ref;
 
-	fn toggle_unknown_0xd8(&mut self, enable: bool);
+	fn get_world_direction_mut(&mut self) -> Matrix4Vec3RefMut;
+
+	fn get_world_up(&self) -> Matrix4Vec3Ref;
+
+	fn get_world_up_mut(&mut self) -> Matrix4Vec3RefMut;
+
+	fn get_parent_roi(&self) -> Option<Weak<dyn OrientableRoi>>;
+
+	fn set_parent_roi(&mut self, parent_roi: Option<Weak<dyn OrientableRoi>>);
+
+	fn update_world_data(&mut self, transform: Option<&Matrix4>, with_children: bool);
+
+	fn update_world_bounding_volumes(&mut self);
+
+	fn update_transform_relative_to_parent(&mut self, transform: &Matrix4);
+
+	fn get_local_transform(&self, transform: &mut Matrix4);
+
+	fn set_needs_world_data_update(&mut self, needs_world_data_update: bool);
 }
 
 pub struct OrientableRoiStruct {
-	base: ROIStruct,
-	local_2_world: Matrix4,
-	world_bounding_box: BoundingBox,
-	unknown_0x80: BoundingBox,
-	world_bounding_sphere: BoundingSphere,
-	world_velocity: Vector3,
-	parent_roi: Option<Weak<dyn OrientableRoi>>,
-	unknown_0xd8: i32
+	pub base: ROIStruct,
+	pub local_2_world: Matrix4,
+	pub world_bounding_box: BoundingBox,
+	pub unknown_0x80: BoundingBox,
+	pub world_bounding_sphere: BoundingSphere,
+	pub world_velocity: Vector3,
+	pub parent_roi: Option<Weak<dyn OrientableRoi>>,
+	pub needs_world_data_update: bool
 }
 
 impl OrientableRoiStruct {
@@ -79,7 +85,7 @@ impl OrientableRoiStruct {
 
 		let local_2_world = Matrix4::identity();
 
-		let mut new = Self {
+		Self {
 			base: ROIStruct::new(),
 			local_2_world,
 			world_bounding_box,
@@ -87,91 +93,109 @@ impl OrientableRoiStruct {
 			world_bounding_sphere,
 			world_velocity,
 			parent_roi: None,
-			unknown_0xd8: 0,
-		};
-
-		new.toggle_unknown_0xd8(true);
-
-		new
+			needs_world_data_update: true,
+		}
 	}
 
-	pub fn get_lods(&self) -> &() {
-		self.base.get_lods()
+	fn get_world_velocity(&self) -> &Vector3 {
+		&self.world_velocity
 	}
 
-	pub fn get_lods_mut(&mut self) -> &mut () {
-		self.base.get_lods_mut()
+	fn get_world_velocity_mut(&mut self) -> &mut Vector3 {
+		&mut self.world_velocity
 	}
 
-	pub fn get_lod(&self, index: i32) -> &dyn LODObject {
-		self.base.get_lod(index)
+	fn set_world_velocity(&mut self, world_velocity: &Vector3) {
+		self.world_velocity = *world_velocity;
 	}
 
-	pub fn get_lod_mut(&mut self, index: i32) -> &mut dyn LODObject {
-		self.base.get_lod_mut(index)
+	fn update_world_velocity(&mut self) {
+
 	}
 
-	pub fn get_lod_count(&self) -> i32 {
-		self.base.get_lod_count()
+	fn get_world_bounding_box(&self) -> &BoundingBox {
+		&self.world_bounding_box
+	}
+	fn get_world_bounding_box_mut(&mut self) -> &mut BoundingBox {
+		&mut self.world_bounding_box
 	}
 
-	pub fn get_comp(&self) -> &CompoundObject {
-		self.base.get_comp()
+	fn get_world_bounding_sphere(&self) -> &BoundingSphere {
+		&self.world_bounding_sphere
 	}
 
-	pub fn get_comp_mut(&mut self) -> &mut CompoundObject {
-		self.base.get_comp_mut()
+	fn get_world_bounding_sphere_mut(&mut self) -> &mut BoundingSphere {
+		&mut self.world_bounding_sphere
 	}
 
-	pub fn get_visibility(&self) -> bool {
-		self.base.get_visibility()
+	fn get_local_2_world(&self) -> &Matrix4 {
+		&self.local_2_world
 	}
 
-	pub fn set_visibility(&mut self, visible: bool) {
-		self.base.set_visibility(visible)
+	fn get_local_2_world_mut(&mut self) -> &mut Matrix4 {
+		&mut self.local_2_world
 	}
 
-	pub fn get_world_velocity(&self) -> &Vector3 {
-		todo!()
+	fn set_local_2_world(&mut self, local_2_world: &Matrix4, update_world_data: bool) {
+		self.local_2_world = *local_2_world;
+
+		if !update_world_data {
+			self.needs_world_data_update = true;
+		}
+		else {
+			self.update_world_bounding_volumes();
+			self.update_world_velocity();
+		}
 	}
 
-	pub fn get_world_bounding_box(&self) -> &BoundingBox {
-		todo!()
+	fn get_world_position(&self) -> Matrix4Vec3Ref {
+		self.local_2_world.fixed_view::<3, 1>(0, 3)
 	}
 
-	pub fn get_world_bounding_sphere(&self) -> &BoundingSphere {
-		todo!()
+	fn get_world_position_mut(&mut self) -> Matrix4Vec3RefMut {
+		self.local_2_world.fixed_view_mut::<3, 1>(0, 3)
 	}
 
-	pub fn v_table_0x14(&mut self) {
-		todo!()
+	fn get_world_direction(&self) -> Matrix4Vec3Ref {
+		self.local_2_world.fixed_view::<3, 1>(0, 2)
 	}
 
-	pub fn v_table_0x1c(&mut self) {
-		todo!()
+	fn get_world_direction_mut(&mut self) -> Matrix4Vec3RefMut {
+		self.local_2_world.fixed_view_mut::<3, 1>(0, 2)
 	}
 
-	pub fn set_local_transform(&mut self, transform: &Matrix4) {
-		todo!()
+	fn get_world_up(&self) -> Matrix4Vec3Ref {
+		self.local_2_world.fixed_view::<3, 1>(0, 1)
 	}
 
-	pub fn v_table_0x24(&mut self, transform: &Matrix4) {
-		todo!()
+	fn get_world_up_mut(&mut self) -> Matrix4Vec3RefMut {
+		self.local_2_world.fixed_view_mut::<3, 1>(0, 1)
 	}
 
-	pub fn update_world_data(&mut self, transform: &Matrix4) {
-		todo!()
+	fn get_parent_roi(&self) -> Option<Weak<dyn OrientableRoi>> {
+		self.parent_roi.clone()
 	}
 
-	pub fn update_world_velocity(&mut self) {
-		todo!()
+	fn set_parent_roi(&mut self, parent_roi: Option<Weak<dyn OrientableRoi>>) {
+		self.parent_roi = parent_roi;
 	}
 
-	pub fn wrapped_set_local_transform(&mut self, transform: &Matrix4) {
-		self.set_local_transform(transform);
+	fn update_world_data(&mut self, transform: Option<&Matrix4>, with_children: bool) {
+		if let Some(transform) = transform {
+			let matrix = self.local_2_world.clone_owned();
+
+			self.local_2_world = transform * matrix;
+		}
+
+		self.update_world_bounding_volumes();
+		self.update_world_velocity();
 	}
 
-	pub fn update_transformation_relative_to_parent(&mut self, transform: &Matrix4) {
+	fn update_world_bounding_volumes(&mut self) {
+
+	}
+
+	fn update_transform_relative_to_parent(&mut self, transform: &Matrix4) {
 		let local_2_world = transform.cast::<f64>();
 		let local_2_parent = self.local_2_world.cast::<f64>();
 
@@ -179,91 +203,46 @@ impl OrientableRoiStruct {
 
 		let parent_2_world = local_inverse * local_2_world;
 
-		let mat: Matrix4 = parent_2_world.cast();
+		let mat = parent_2_world.cast::<f32>();
 
-		self.update_world_data(&mat);
+		self.update_world_data(Some(&mat), true);
 	}
 
-	pub fn wrapped_v_table_0x24(&mut self, transform: &Matrix4) {
-		self.v_table_0x24(transform)
-	}
-
-	pub fn get_local_transform(&self, transform: &mut Matrix4) {
+	fn get_local_transform(&self, transform: &mut Matrix4) {
 		if self.parent_roi.is_none() {
 			*transform = self.local_2_world;
-			return;
 		}
 
-		let parent = self.parent_roi.as_ref().unwrap().upgrade();
-
-		if parent.is_none() {
-			panic!("tried to access dropped parent");
-		}
-
-		let parent = parent.unwrap();
+		let parent = self.parent_roi
+			.as_ref()
+			.unwrap()
+			.upgrade()
+			.expect("Parent ROI already dropped");
 
 		let local_2_parent = parent.get_local_2_world().cast::<f64>();
 
-		let local_inverse = local_2_parent.try_inverse().unwrap().cast::<f32>();
+		let local_inverse = local_2_parent.try_inverse().unwrap();
 
-		*transform = self.local_2_world * local_inverse;
+		let mat = local_inverse.cast::<f32>();
+
+		*transform = self.local_2_world * mat;
 	}
 
-	pub fn fun_100a58f0(&mut self, transform: &Matrix4) {
-		self.local_2_world = transform.clone_owned();
-		self.toggle_unknown_0xd8(true);
+	fn set_needs_world_data_update(&mut self, needs_world_data_update: bool) {
+		self.needs_world_data_update = needs_world_data_update;
 	}
+}
 
-	pub fn fun_100a5a30(&mut self, world_velocity: &Vector3) {
-		todo!()
-	}
+pub fn calc_world_bounding_volumes(
+	modelling_sphere: &BoundingSphere,
+	local_2_world: &Matrix4,
+	world_bounding_box: &mut BoundingBox,
+	world_bounding_sphere: &mut BoundingSphere
+) {
+	world_bounding_sphere.center = (local_2_world * modelling_sphere.center.push(1.0)).fixed_view::<3, 1>(0, 0).into();
 
-	pub fn get_local_2_world(&self) -> &Matrix4 {
-		&self.local_2_world
-	}
+	world_bounding_sphere.radius = modelling_sphere.radius;
 
-	pub fn get_local_2_world_mut(&mut self) -> &mut Matrix4 {
-		&mut self.local_2_world
-	}
-
-	pub fn get_world_position(&self) -> Matrix4Vec3Ref {
-		self.local_2_world.fixed_view::<3, 1>(0, 3)
-	}
-
-	pub fn get_world_position_mut(&mut self) -> Matrix4Vec3RefMut {
-		self.local_2_world.fixed_view_mut::<3, 1>(0, 3)
-	}
-
-	pub fn get_world_direction(&self) -> Matrix4Vec3Ref {
-		self.local_2_world.fixed_view::<3, 1>(0, 2)
-	}
-
-	pub fn get_world_direction_mut(&mut self) -> Matrix4Vec3RefMut {
-		self.local_2_world.fixed_view_mut::<3, 1>(0, 2)
-	}
-
-	pub fn get_world_up(&self) -> Matrix4Vec3Ref {
-		self.local_2_world.fixed_view::<3, 1>(0, 1)
-	}
-
-	pub fn get_world_up_mut(&mut self) -> Matrix4Vec3RefMut {
-		self.local_2_world.fixed_view_mut::<3, 1>(0, 1)
-	}
-
-	pub fn get_parent_roi(&self) -> Option<Weak<dyn OrientableRoi>> {
-		self.parent_roi.clone()
-	}
-
-	pub fn set_parent_roi(&mut self, parent_roi: Option<Weak<dyn OrientableRoi>>) {
-		self.parent_roi = parent_roi
-	}
-
-	pub fn toggle_unknown_0xd8(&mut self, enable: bool) {
-		if enable {
-			self.unknown_0xd8 |= 0x01 | 0x02;
-		}
-		else {
-			self.unknown_0xd8 &= !0x01;
-		}
-	}
+	world_bounding_box.min = world_bounding_sphere.center.add_scalar(-world_bounding_sphere.radius);
+	world_bounding_box.max = world_bounding_sphere.center.add_scalar(world_bounding_sphere.radius);
 }
